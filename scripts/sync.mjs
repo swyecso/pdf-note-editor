@@ -11,10 +11,12 @@ try {
   console.log('       PDF Note Editor - Build & Sync to GitHub');
   console.log('========================================================\n');
 
-  console.log('[1/3] Building production bundle...');
+  // 1. Build production bundle
+  console.log('[1/4] Building production bundle...');
   run('npm.cmd run build');
 
-  console.log('\n[2/3] Checking Git status and staging changes...');
+  // 2. Commit changes to main branch
+  console.log('\n[2/4] Checking Git status and staging changes...');
   run('git add .');
 
   const status = execSync('git status --porcelain').toString().trim();
@@ -27,11 +29,21 @@ try {
     run(`git commit -m "Auto-sync build: ${timestamp}"`);
   }
 
-  console.log('\n[3/3] Pushing to GitHub (origin/main)...');
+  // 3. Push main branch
+  console.log('\n[3/4] Pushing source code to GitHub (main)...');
   run('git push origin main');
 
+  // 4. Update gh-pages branch for live web hosting
+  console.log('\n[4/4] Deploying live web app to GitHub Pages (gh-pages)...');
+  const blob = execSync('git hash-object -w pdf-notes-editor.html').toString().trim();
+  const treeInput = `100644 blob ${blob}\tindex.html\n`;
+  const tree = execSync('git mktree', { input: treeInput }).toString().trim();
+  const commit = execSync(`git commit-tree ${tree} -m "Deploy latest build to GitHub Pages"`).toString().trim();
+  execSync(`git update-ref refs/heads/gh-pages ${commit}`);
+  run('git push origin gh-pages --force');
+
   console.log('\n========================================================');
-  console.log('✓ SUCCESS: Build and GitHub sync completed!');
+  console.log('✓ SUCCESS: Build, source sync, and GitHub Pages updated!');
   console.log('========================================================\n');
 } catch (error) {
   console.error('\n❌ Sync failed:', error.message);
