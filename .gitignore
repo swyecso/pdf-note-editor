@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production build artifacts
+dist/
+
+# Local env & cache
+.env
+.env.local
+.DS_Store
+Thumbs.db
